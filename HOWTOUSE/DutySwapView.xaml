@@ -1,0 +1,65 @@
+<UserControl x:Class="HOWTOUSE.DutySwapView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             mc:Ignorable="d">
+    <UserControl.Resources>
+        <Style x:Key="Panel" TargetType="Border">
+            <Setter Property="Background" Value="White" />
+            <Setter Property="BorderBrush" Value="#D8E0EA" />
+            <Setter Property="BorderThickness" Value="1" />
+            <Setter Property="CornerRadius" Value="8" />
+            <Setter Property="Padding" Value="18" />
+        </Style>
+        <Style x:Key="PrimaryButton" TargetType="Button">
+            <Setter Property="Background" Value="#2563EB" />
+            <Setter Property="Foreground" Value="White" />
+            <Setter Property="BorderThickness" Value="0" />
+            <Setter Property="Padding" Value="14,9" />
+            <Setter Property="FontWeight" Value="SemiBold" />
+            <Setter Property="Cursor" Value="Hand" />
+        </Style>
+        <Style TargetType="TextBox">
+            <Setter Property="BorderBrush" Value="#CBD5E1" />
+            <Setter Property="BorderThickness" Value="1" />
+            <Setter Property="Padding" Value="10,8" />
+            <Setter Property="FontSize" Value="14" />
+        </Style>
+        <Style TargetType="DatePicker">
+            <Setter Property="BorderBrush" Value="#CBD5E1" />
+            <Setter Property="BorderThickness" Value="1" />
+            <Setter Property="Padding" Value="8,6" />
+            <Setter Property="FontSize" Value="14" />
+        </Style>
+    </UserControl.Resources>
+
+    <Grid>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="420" />
+            <ColumnDefinition Width="18" />
+            <ColumnDefinition Width="*" />
+        </Grid.ColumnDefinitions>
+        <Border Style="{StaticResource Panel}">
+            <StackPanel>
+                <TextBlock Text="스케줄 교환 요청" FontSize="18" FontWeight="SemiBold" />
+                <TextBlock Text="당직자끼리 일정 교환을 요청하고 처리 상태를 확인합니다." Margin="0,5,0,14" Foreground="#64748B" TextWrapping="Wrap" />
+                <TextBlock Text="교환 희망일" FontWeight="SemiBold" />
+                <DatePicker x:Name="SwapDatePicker" Margin="0,5,0,12" />
+                <TextBlock Text="요청 내용" FontWeight="SemiBold" />
+                <TextBox x:Name="SwapReasonInput" Margin="0,5,0,12" MinHeight="130" AcceptsReturn="True" TextWrapping="Wrap" />
+                <Button Content="교환 요청 등록" Style="{StaticResource PrimaryButton}" Click="SaveSwapButton_Click" />
+            </StackPanel>
+        </Border>
+        <Border Grid.Column="2" Style="{StaticResource Panel}">
+            <Grid>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="*" />
+                </Grid.RowDefinitions>
+                <TextBlock Text="교환 요청 목록" FontSize="18" FontWeight="SemiBold" />
+                <ListBox x:Name="SwapListBox" Grid.Row="1" Margin="0,14,0,0" />
+            </Grid>
+        </Border>
+    </Grid>
+</UserControl>

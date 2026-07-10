@@ -1,0 +1,88 @@
+<Window x:Class="HOWTOUSE.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        mc:Ignorable="d"
+        Title="EZHOWTOUSE"
+        Height="780"
+        Width="1280"
+        MinHeight="680"
+        MinWidth="1120"
+        Background="#F3F6FA"
+        FontFamily="Malgun Gothic">
+    <Window.Resources>
+        <Style x:Key="NavButton" TargetType="Button">
+            <Setter Property="HorizontalContentAlignment" Value="Stretch" />
+            <Setter Property="Background" Value="Transparent" />
+            <Setter Property="Foreground" Value="#64748B" />
+            <Setter Property="BorderThickness" Value="0" />
+            <Setter Property="Padding" Value="14,11" />
+            <Setter Property="Margin" Value="0,2" />
+            <Setter Property="FontSize" Value="13" />
+            <Setter Property="FontWeight" Value="SemiBold" />
+            <Setter Property="Cursor" Value="Hand" />
+        </Style>
+    </Window.Resources>
+
+    <Grid Background="#EFF7FF">
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="270" />
+            <ColumnDefinition Width="*" />
+        </Grid.ColumnDefinitions>
+
+        <Border Grid.Column="0" Margin="14,12,18,12" Background="White" CornerRadius="18" BorderThickness="0">
+            <Grid Margin="24,24,24,18">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="*" />
+                    <RowDefinition Height="Auto" />
+                </Grid.RowDefinitions>
+
+                <StackPanel Margin="5,10,0,25">
+                    <Image Source="Assets/ezHOWTOUSE_LOGO.png" Width="180" Height="50" Stretch="Fill" HorizontalAlignment="Left" />
+                </StackPanel>
+
+                <StackPanel Grid.Row="1">
+                    <Border Height="1" Background="#E2E8F0" Margin="0,0,0,16" />
+
+                    <Button x:Name="DutyNavButton" Tag="Duty" Style="{StaticResource NavButton}" Click="NavButton_Click">
+                        <TextBlock Text="당직 프로그램" VerticalAlignment="Center" TextWrapping="Wrap" />
+                    </Button>
+
+                    <Border Height="1" Background="#E2E8F0" Margin="0,16,0,14" />
+                    
+                    <Button x:Name="ManualNavButton" Tag="Manual" Style="{StaticResource NavButton}" Click="NavButton_Click">
+                        <TextBlock Text="팝업 메시지 매뉴얼" VerticalAlignment="Center" TextWrapping="Wrap" />
+                    </Button>
+
+                    <Border Height="1" Background="#E2E8F0" Margin="0,16,0,14" />
+
+                    <Button x:Name="SuggestionNavButton" Tag="Suggestion" Style="{StaticResource NavButton}" Click="NavButton_Click">
+                        <TextBlock Text="제안사항" VerticalAlignment="Center" TextWrapping="Wrap" />
+                    </Button>
+
+                    <Border Height="1" Background="#E2E8F0" Margin="0,16,0,14" />
+
+                    <Button x:Name="SurveyNavButton" Tag="Survey" Style="{StaticResource NavButton}" Click="NavButton_Click">
+                        <TextBlock Text="사용자 만족도 조사" VerticalAlignment="Center" TextWrapping="Wrap" />
+                    </Button>
+                </StackPanel>
+
+                <StackPanel Grid.Row="2" Orientation="Horizontal" Margin="0,0,0,0">
+                    <Border Width="42" Height="42" Background="#E0F2FE" CornerRadius="21">
+                        <TextBlock Text="EZ" Foreground="#0284C7" FontWeight="Bold" HorizontalAlignment="Center" VerticalAlignment="Center" />
+                    </Border>
+                    <StackPanel Margin="10,0,0,0" VerticalAlignment="Center">
+                        <TextBlock Text="전산실" FontWeight="SemiBold" Foreground="#0F172A" />
+                        <TextBlock Text="Administrator" Foreground="#94A3B8" FontSize="12" />
+                    </StackPanel>
+                </StackPanel>
+            </Grid>
+        </Border>
+
+        <Grid Grid.Column="1" Margin="12,26,26,26">
+            <ContentControl x:Name="MainContentControl" />
+        </Grid>
+    </Grid>
+</Window>
