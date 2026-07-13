@@ -1,3 +1,4 @@
+using System;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
@@ -10,10 +11,12 @@ namespace HOWTOUSE
         private PopupManualView popupManualView;
         private SuggestionView suggestionView;
         private SurveyView surveyView;
+        private bool isLoggedIn;
 
         public MainWindow()
         {
             InitializeComponent();
+            UpdateLoginArea();
             CreateDutyProgram();
         }
 
@@ -83,6 +86,32 @@ namespace HOWTOUSE
         {
             button.Background = isSelected ? new SolidColorBrush(Color.FromRgb(14, 145, 245)) : Brushes.Transparent;
             button.Foreground = isSelected ? Brushes.White : new SolidColorBrush(Color.FromRgb(100, 116, 139));
+        }
+
+        public void SetLoginUser(string employeeNo, string userName)
+        {
+            string displayName = string.IsNullOrWhiteSpace(userName) ? employeeNo : userName;
+
+            isLoggedIn = true;
+            LoginUserNameTextBlock.Text = displayName;
+            LoginUserRoleTextBlock.Text = employeeNo;
+            UserInitialTextBlock.Text = GetUserInitial(displayName);
+            UpdateLoginArea();
+        }
+
+        private void UpdateLoginArea()
+        {
+            UserInfoPanel.Visibility = isLoggedIn ? Visibility.Visible : Visibility.Collapsed;
+        }
+
+        private static string GetUserInitial(string userName)
+        {
+            if (string.IsNullOrWhiteSpace(userName))
+            {
+                return "EZ";
+            }
+
+            return userName.Substring(0, 1).ToUpper();
         }
     }
 }

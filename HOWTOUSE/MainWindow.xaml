@@ -40,7 +40,7 @@
                 </Grid.RowDefinitions>
 
                 <StackPanel Margin="5,10,0,25">
-                    <Image Source="Assets/ezHOWTOUSE_LOGO.png" Width="180" Height="50" Stretch="Fill" HorizontalAlignment="Left" />
+                    <Image Source="Assets/logo.jpg" Width="180" Height="50" Stretch="Fill" HorizontalAlignment="Left" />
                 </StackPanel>
 
                 <StackPanel Grid.Row="1">
@@ -51,7 +51,7 @@
                     </Button>
 
                     <Border Height="1" Background="#E2E8F0" Margin="0,16,0,14" />
-                    
+
                     <Button x:Name="ManualNavButton" Tag="Manual" Style="{StaticResource NavButton}" Click="NavButton_Click">
                         <TextBlock Text="팝업 메시지 매뉴얼" VerticalAlignment="Center" TextWrapping="Wrap" />
                     </Button>
@@ -69,13 +69,31 @@
                     </Button>
                 </StackPanel>
 
-                <StackPanel Grid.Row="2" Orientation="Horizontal" Margin="0,0,0,0">
+                <StackPanel x:Name="UserInfoPanel"
+                            Grid.Row="2"
+                            Orientation="Horizontal"
+                            Margin="0,0,0,0"
+                            VerticalAlignment="Center"
+                            Visibility="Collapsed">
                     <Border Width="42" Height="42" Background="#E0F2FE" CornerRadius="21">
-                        <TextBlock Text="EZ" Foreground="#0284C7" FontWeight="Bold" HorizontalAlignment="Center" VerticalAlignment="Center" />
+                        <TextBlock x:Name="UserInitialTextBlock"
+                                   Text="EZ"
+                                   Foreground="#0284C7"
+                                   FontWeight="Bold"
+                                   HorizontalAlignment="Center"
+                                   VerticalAlignment="Center" />
                     </Border>
                     <StackPanel Margin="10,0,0,0" VerticalAlignment="Center">
-                        <TextBlock Text="전산실" FontWeight="SemiBold" Foreground="#0F172A" />
-                        <TextBlock Text="Administrator" Foreground="#94A3B8" FontSize="12" />
+                        <TextBlock x:Name="LoginUserNameTextBlock"
+                                   Text="전산실"
+                                   FontWeight="SemiBold"
+                                   Foreground="#0F172A"
+                                   TextTrimming="CharacterEllipsis" />
+                        <TextBlock x:Name="LoginUserRoleTextBlock"
+                                   Text="Administrator"
+                                   Foreground="#94A3B8"
+                                   FontSize="12"
+                                   TextTrimming="CharacterEllipsis" />
                     </StackPanel>
                 </StackPanel>
             </Grid>
