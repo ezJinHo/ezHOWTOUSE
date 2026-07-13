@@ -5,6 +5,21 @@
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              mc:Ignorable="d">
     <UserControl.Resources>
+        <Style x:Key="StretchListBoxItem" TargetType="ListBoxItem">
+            <Setter Property="HorizontalContentAlignment" Value="Stretch" />
+            <Setter Property="Background" Value="Transparent" />
+            <Setter Property="BorderThickness" Value="0" />
+            <Setter Property="Padding" Value="0" />
+            <Setter Property="FocusVisualStyle" Value="{x:Null}" />
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="ListBoxItem">
+                        <ContentPresenter HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
+                                          VerticalAlignment="{TemplateBinding VerticalContentAlignment}" />
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
         <Style x:Key="Panel" TargetType="Border">
             <Setter Property="Background" Value="White" />
             <Setter Property="BorderBrush" Value="#D8E0EA" />
@@ -12,13 +27,35 @@
             <Setter Property="CornerRadius" Value="8" />
             <Setter Property="Padding" Value="18" />
         </Style>
-        <Style x:Key="PrimaryButton" TargetType="Button">
-            <Setter Property="Background" Value="#2563EB" />
-            <Setter Property="Foreground" Value="White" />
+        <Style x:Key="TitleButton" TargetType="Button">
+            <Setter Property="HorizontalContentAlignment" Value="Left" />
+            <Setter Property="Background" Value="Transparent" />
             <Setter Property="BorderThickness" Value="0" />
-            <Setter Property="Padding" Value="14,9" />
+            <Setter Property="Padding" Value="0" />
+            <Setter Property="Foreground" Value="#0F172A" />
+            <Setter Property="FontSize" Value="15" />
             <Setter Property="FontWeight" Value="SemiBold" />
             <Setter Property="Cursor" Value="Hand" />
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <ContentPresenter HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
+                                          VerticalAlignment="{TemplateBinding VerticalContentAlignment}" />
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+        <Style x:Key="SmallActionButton" TargetType="Button">
+            <Setter Property="Background" Value="#EFF6FF" />
+            <Setter Property="Foreground" Value="#0E91F5" />
+            <Setter Property="BorderBrush" Value="#BFDBFE" />
+            <Setter Property="BorderThickness" Value="1" />
+            <Setter Property="Padding" Value="4,5" />
+            <Setter Property="FontSize" Value="12" />
+            <Setter Property="FontWeight" Value="SemiBold" />
+            <Setter Property="Cursor" Value="Hand" />
+            <Setter Property="MinWidth" Value="0" />
+            <Setter Property="Height" Value="28" />
         </Style>
         <Style TargetType="TextBox">
             <Setter Property="BorderBrush" Value="#CBD5E1" />
@@ -28,48 +65,57 @@
         </Style>
     </UserControl.Resources>
 
-    <Grid>
-        <Grid.ColumnDefinitions>
-            <ColumnDefinition Width="*" />
-            <ColumnDefinition Width="18" />
-            <ColumnDefinition Width="360" />
-        </Grid.ColumnDefinitions>
+    <Border Style="{StaticResource Panel}">
+        <Grid>
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="*" />
+            </Grid.RowDefinitions>
 
-        <Border Style="{StaticResource Panel}">
             <Grid>
-                <Grid.RowDefinitions>
-                    <RowDefinition Height="Auto" />
-                    <RowDefinition Height="*" />
-                </Grid.RowDefinitions>
-                <TextBlock Text="당직 매뉴얼" FontSize="18" FontWeight="SemiBold" />
-                <ListBox x:Name="DutyListBox" Grid.Row="1" Margin="0,14,0,0">
-                    <ListBox.ItemTemplate>
-                        <DataTemplate>
-                            <Border Background="#F8FAFC" BorderBrush="#E2E8F0" BorderThickness="1" CornerRadius="6" Padding="12" Margin="0,0,0,8">
-                                <StackPanel>
-                                    <TextBlock Text="{Binding Title}" FontWeight="SemiBold" />
-                                    <TextBlock Text="{Binding Detail}" Margin="0,5,0,0" TextWrapping="Wrap" Foreground="#475569" />
-                                    <TextBlock Text="{Binding LastModifiedLabel}" Margin="0,6,0,0" Foreground="#64748B" FontSize="12" />
-                                </StackPanel>
-                            </Border>
-                        </DataTemplate>
-                    </ListBox.ItemTemplate>
-                </ListBox>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="Auto" />
+                </Grid.ColumnDefinitions>
+                <TextBlock Text="당직 매뉴얼 게시글" FontSize="20" FontWeight="Bold" Foreground="#0F172A" />
+                <Button Grid.Column="1"
+                        Content="추가"
+                        Width="48"
+                        HorizontalAlignment="Right"
+                        Style="{StaticResource SmallActionButton}"
+                        Click="NewManualPostButton_Click" />
             </Grid>
-        </Border>
 
-        <Border Grid.Column="2" Style="{StaticResource Panel}">
-            <StackPanel>
-                <TextBlock Text="매뉴얼 수정" FontSize="18" FontWeight="SemiBold" />
-                <TextBlock Text="저장 시 수정자와 시간이 이력으로 남습니다." Margin="0,5,0,14" Foreground="#64748B" TextWrapping="Wrap" />
-                <TextBlock Text="제목" FontWeight="SemiBold" />
-                <TextBox x:Name="DutyTitleInput" Margin="0,5,0,12" />
-                <TextBlock Text="내용" FontWeight="SemiBold" />
-                <TextBox x:Name="DutyDetailInput" Margin="0,5,0,12" MinHeight="95" AcceptsReturn="True" TextWrapping="Wrap" />
-                <Button Content="당직 매뉴얼 저장" Style="{StaticResource PrimaryButton}" Click="SaveDutyButton_Click" />
-                <TextBlock Text="수정 이력" Margin="0,22,0,8" FontSize="16" FontWeight="SemiBold" />
-                <ListBox x:Name="DutyAuditListBox" MinHeight="150" />
-            </StackPanel>
-        </Border>
-    </Grid>
+            <TextBox x:Name="DutySearchTextBox"
+                     Grid.Row="1"
+                     Margin="0,14,0,14"
+                     TextChanged="DutySearchTextBox_TextChanged" />
+
+            <ListBox x:Name="DutyListBox"
+                     Grid.Row="2"
+                     BorderThickness="0"
+                     HorizontalContentAlignment="Stretch"
+                     ScrollViewer.VerticalScrollBarVisibility="Auto"
+                     ScrollViewer.HorizontalScrollBarVisibility="Disabled"
+                     ItemContainerStyle="{StaticResource StretchListBoxItem}">
+                <ListBox.ItemTemplate>
+                    <DataTemplate>
+                        <Border Background="#F8FAFC"
+                                BorderBrush="#E2E8F0"
+                                BorderThickness="1"
+                                CornerRadius="6"
+                                Padding="12"
+                                Margin="0,0,0,8">
+                            <Button CommandParameter="{Binding}"
+                                    Style="{StaticResource TitleButton}"
+                                    Click="ManualTitleButton_Click">
+                                <TextBlock Text="{Binding Title}" TextTrimming="CharacterEllipsis" />
+                            </Button>
+                        </Border>
+                    </DataTemplate>
+                </ListBox.ItemTemplate>
+            </ListBox>
+        </Grid>
+    </Border>
 </UserControl>

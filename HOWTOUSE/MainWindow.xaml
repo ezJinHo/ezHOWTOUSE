@@ -23,6 +23,24 @@
             <Setter Property="FontWeight" Value="SemiBold" />
             <Setter Property="Cursor" Value="Hand" />
         </Style>
+        <Style x:Key="SubNavButton" TargetType="Button">
+            <Setter Property="HorizontalContentAlignment" Value="Stretch" />
+            <Setter Property="Background" Value="Transparent" />
+            <Setter Property="Foreground" Value="#94A3B8" />
+            <Setter Property="BorderThickness" Value="0" />
+            <Setter Property="Padding" Value="24,7,10,7" />
+            <Setter Property="Margin" Value="0,1" />
+            <Setter Property="FontSize" Value="12" />
+            <Setter Property="FontWeight" Value="SemiBold" />
+            <Setter Property="Cursor" Value="Hand" />
+        </Style>
+        <Style x:Key="NavGroupHeader" TargetType="TextBlock">
+            <Setter Property="Foreground" Value="#0F172A" />
+            <Setter Property="FontSize" Value="13" />
+            <Setter Property="FontWeight" Value="Bold" />
+            <Setter Property="Padding" Value="14,11" />
+            <Setter Property="TextWrapping" Value="Wrap" />
+        </Style>
     </Window.Resources>
 
     <Grid Background="#EFF7FF">
@@ -40,21 +58,39 @@
                 </Grid.RowDefinitions>
 
                 <StackPanel Margin="5,10,0,25">
-                    <Image Source="Assets/logo.jpg" Width="180" Height="50" Stretch="Fill" HorizontalAlignment="Left" />
+                    <Image Source="Assets/ezHOWTOUSE_LOGO.png" Width="180" Height="50" Stretch="Uniform" HorizontalAlignment="Left" />
                 </StackPanel>
 
                 <StackPanel Grid.Row="1">
                     <Border Height="1" Background="#E2E8F0" Margin="0,0,0,16" />
 
-                    <Button x:Name="DutyNavButton" Tag="Duty" Style="{StaticResource NavButton}" Click="NavButton_Click">
-                        <TextBlock Text="당직 프로그램" VerticalAlignment="Center" TextWrapping="Wrap" />
-                    </Button>
+                    <TextBlock Text="당직 프로그램" Style="{StaticResource NavGroupHeader}" />
+                    <StackPanel Margin="0,0,0,4">
+                        <Button x:Name="DutyTodayNavButton" Tag="DutyToday" Style="{StaticResource SubNavButton}" Click="NavButton_Click">
+                            <TextBlock Text="오늘 확인 업무" VerticalAlignment="Center" TextWrapping="Wrap" />
+                        </Button>
+                        <Button x:Name="DutyManualNavButton" Tag="DutyManual" Style="{StaticResource SubNavButton}" Click="NavButton_Click">
+                            <TextBlock Text="당직 매뉴얼" VerticalAlignment="Center" TextWrapping="Wrap" />
+                        </Button>
+                        <Button x:Name="DutyScheduleNavButton" Tag="DutySchedule" Style="{StaticResource SubNavButton}" Click="NavButton_Click">
+                            <TextBlock Text="당직일정" VerticalAlignment="Center" TextWrapping="Wrap" />
+                        </Button>
+                        <Button x:Name="DutySwapNavButton" Tag="DutySwap" Style="{StaticResource SubNavButton}" Click="NavButton_Click">
+                            <TextBlock Text="스케줄 교환" VerticalAlignment="Center" TextWrapping="Wrap" />
+                        </Button>
+                    </StackPanel>
 
                     <Border Height="1" Background="#E2E8F0" Margin="0,16,0,14" />
 
-                    <Button x:Name="ManualNavButton" Tag="Manual" Style="{StaticResource NavButton}" Click="NavButton_Click">
-                        <TextBlock Text="팝업 메시지 매뉴얼" VerticalAlignment="Center" TextWrapping="Wrap" />
-                    </Button>
+                    <TextBlock Text="사용자 매뉴얼" Style="{StaticResource NavGroupHeader}" />
+                    <StackPanel Margin="0,0,0,4">
+                        <Button x:Name="PopupManualNavButton" Tag="ManualPopup" Style="{StaticResource SubNavButton}" Click="NavButton_Click">
+                            <TextBlock Text="팝업 메시지 매뉴얼" VerticalAlignment="Center" TextWrapping="Wrap" />
+                        </Button>
+                        <Button x:Name="InquiryNavButton" Tag="ManualInquiry" Style="{StaticResource SubNavButton}" Click="NavButton_Click">
+                            <TextBlock Text="문의사항" VerticalAlignment="Center" TextWrapping="Wrap" />
+                        </Button>
+                    </StackPanel>
 
                     <Border Height="1" Background="#E2E8F0" Margin="0,16,0,14" />
 
@@ -72,7 +108,6 @@
                 <StackPanel x:Name="UserInfoPanel"
                             Grid.Row="2"
                             Orientation="Horizontal"
-                            Margin="0,0,0,0"
                             VerticalAlignment="Center"
                             Visibility="Collapsed">
                     <Border Width="42" Height="42" Background="#E0F2FE" CornerRadius="21">

@@ -17,20 +17,24 @@ namespace HOWTOUSE
         {
             InitializeComponent();
             UpdateLoginArea();
-            CreateDutyProgram();
+            CreateDutyProgram("Manual");
         }
 
         private void NavButton_Click(object sender, RoutedEventArgs e)
         {
             string target = (sender as Button)?.Tag?.ToString() ?? "Duty";
 
-            if (target == "Duty") CreateDutyProgram();
-            if (target == "Manual") CreatePopupManual();
+            if (target == "DutyManual") CreateDutyProgram("Manual");
+            if (target == "DutyToday") CreateDutyProgram("Today");
+            if (target == "DutySchedule") CreateDutyProgram("Schedule");
+            if (target == "DutySwap") CreateDutyProgram("Swap");
+            if (target == "ManualPopup") CreatePopupManual("Popup");
+            if (target == "ManualInquiry") CreatePopupManual("Inquiry");
             if (target == "Suggestion") CreateSuggestion();
             if (target == "Survey") CreateSurvey();
         }
 
-        private void CreateDutyProgram()
+        private void CreateDutyProgram(string selectedTab)
         {
             if (dutyProgramView == null)
             {
@@ -38,10 +42,11 @@ namespace HOWTOUSE
             }
 
             MainContentControl.Content = dutyProgramView;
-            UpdateSelectedMenu("Duty");
+            dutyProgramView.SelectDutyTab(selectedTab);
+            UpdateSelectedMenu("Duty" + selectedTab);
         }
 
-        private void CreatePopupManual()
+        private void CreatePopupManual(string selectedTab)
         {
             if (popupManualView == null)
             {
@@ -49,7 +54,8 @@ namespace HOWTOUSE
             }
 
             MainContentControl.Content = popupManualView;
-            UpdateSelectedMenu("Manual");
+            popupManualView.SelectManualTab(selectedTab);
+            UpdateSelectedMenu("Manual" + selectedTab);
         }
 
         private void CreateSuggestion()
@@ -76,16 +82,27 @@ namespace HOWTOUSE
 
         private void UpdateSelectedMenu(string selectedMenu)
         {
-            ApplyMenuState(DutyNavButton, selectedMenu == "Duty");
-            ApplyMenuState(ManualNavButton, selectedMenu == "Manual");
             ApplyMenuState(SuggestionNavButton, selectedMenu == "Suggestion");
             ApplyMenuState(SurveyNavButton, selectedMenu == "Survey");
+
+            ApplySubMenuState(DutyManualNavButton, selectedMenu == "DutyManual");
+            ApplySubMenuState(DutyTodayNavButton, selectedMenu == "DutyToday");
+            ApplySubMenuState(DutyScheduleNavButton, selectedMenu == "DutySchedule");
+            ApplySubMenuState(DutySwapNavButton, selectedMenu == "DutySwap");
+            ApplySubMenuState(PopupManualNavButton, selectedMenu == "ManualPopup");
+            ApplySubMenuState(InquiryNavButton, selectedMenu == "ManualInquiry");
         }
 
         private static void ApplyMenuState(Button button, bool isSelected)
         {
-            button.Background = isSelected ? new SolidColorBrush(Color.FromRgb(14, 145, 245)) : Brushes.Transparent;
-            button.Foreground = isSelected ? Brushes.White : new SolidColorBrush(Color.FromRgb(100, 116, 139));
+            button.Background = Brushes.Transparent;
+            button.Foreground = isSelected ? new SolidColorBrush(Color.FromRgb(14, 145, 245)) : new SolidColorBrush(Color.FromRgb(100, 116, 139));
+        }
+
+        private static void ApplySubMenuState(Button button, bool isSelected)
+        {
+            button.Background = Brushes.Transparent;
+            button.Foreground = isSelected ? new SolidColorBrush(Color.FromRgb(14, 145, 245)) : new SolidColorBrush(Color.FromRgb(148, 163, 184));
         }
 
         public void SetLoginUser(string employeeNo, string userName)

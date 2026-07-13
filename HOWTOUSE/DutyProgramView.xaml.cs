@@ -1,28 +1,33 @@
 using System.Windows;
 using System.Windows.Controls;
-using System.Windows.Media;
 
 namespace HOWTOUSE
 {
     public partial class DutyProgramView : UserControl
     {
         private DutyManualView dutyManualView;
+        private DutyTodayTaskView dutyTodayTaskView;
         private DutyScheduleView dutyScheduleView;
         private DutySwapView dutySwapView;
 
         public DutyProgramView()
         {
             InitializeComponent();
-            CreateDutyManual();
+            SelectDutyTab("Manual");
+        }
+
+        public void SelectDutyTab(string target)
+        {
+            if (target == "Manual") CreateDutyManual();
+            if (target == "Today") CreateDutyTodayTask();
+            if (target == "Schedule") CreateDutySchedule();
+            if (target == "Swap") CreateDutySwap();
         }
 
         private void DutyTabButton_Click(object sender, RoutedEventArgs e)
         {
             string target = (sender as Button)?.Tag?.ToString() ?? "Manual";
-
-            if (target == "Manual") CreateDutyManual();
-            if (target == "Schedule") CreateDutySchedule();
-            if (target == "Swap") CreateDutySwap();
+            SelectDutyTab(target);
         }
 
         private void CreateDutyManual()
@@ -33,7 +38,16 @@ namespace HOWTOUSE
             }
 
             DutyContentControl.Content = dutyManualView;
-            UpdateSelectedTab("Manual");
+        }
+
+        private void CreateDutyTodayTask()
+        {
+            if (dutyTodayTaskView == null)
+            {
+                dutyTodayTaskView = new DutyTodayTaskView();
+            }
+
+            DutyContentControl.Content = dutyTodayTaskView;
         }
 
         private void CreateDutySchedule()
@@ -44,7 +58,6 @@ namespace HOWTOUSE
             }
 
             DutyContentControl.Content = dutyScheduleView;
-            UpdateSelectedTab("Schedule");
         }
 
         private void CreateDutySwap()
@@ -55,21 +68,6 @@ namespace HOWTOUSE
             }
 
             DutyContentControl.Content = dutySwapView;
-            UpdateSelectedTab("Swap");
-        }
-
-        private void UpdateSelectedTab(string selectedTab)
-        {
-            ApplyTabState(ManualTabButton, selectedTab == "Manual");
-            ApplyTabState(ScheduleTabButton, selectedTab == "Schedule");
-            ApplyTabState(SwapTabButton, selectedTab == "Swap");
-        }
-
-        private static void ApplyTabState(Button button, bool isSelected)
-        {
-            button.Background = isSelected ? new SolidColorBrush(Color.FromRgb(14, 145, 245)) : Brushes.Transparent;
-            button.Foreground = isSelected ? Brushes.White : new SolidColorBrush(Color.FromRgb(100, 116, 139));
-            button.BorderBrush = isSelected ? new SolidColorBrush(Color.FromRgb(14, 145, 245)) : Brushes.Transparent;
         }
     }
 }

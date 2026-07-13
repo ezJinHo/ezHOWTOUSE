@@ -20,6 +20,15 @@
             <Setter Property="FontWeight" Value="SemiBold" />
             <Setter Property="Cursor" Value="Hand" />
         </Style>
+        <Style x:Key="TabButton" TargetType="Button">
+            <Setter Property="Background" Value="Transparent" />
+            <Setter Property="Foreground" Value="#64748B" />
+            <Setter Property="BorderThickness" Value="0" />
+            <Setter Property="Padding" Value="16,9" />
+            <Setter Property="FontSize" Value="14" />
+            <Setter Property="FontWeight" Value="SemiBold" />
+            <Setter Property="Cursor" Value="Hand" />
+        </Style>
         <Style TargetType="TextBox">
             <Setter Property="BorderBrush" Value="#CBD5E1" />
             <Setter Property="BorderThickness" Value="1" />
@@ -33,12 +42,16 @@
             <RowDefinition Height="Auto" />
             <RowDefinition Height="*" />
         </Grid.RowDefinitions>
+
         <StackPanel Margin="0,0,0,18">
-            <TextBlock Text="팝업 메시지 매뉴얼" FontSize="28" FontWeight="Bold" Foreground="#0F172A" />
-            <TextBlock Text="오류나 팝업 메시지를 키워드로 검색하고 처리절차를 확인합니다." Margin="0,6,0,0" FontSize="14" Foreground="#64748B" />
+            <TextBlock Text="사용자 매뉴얼" FontSize="28" FontWeight="Bold" Foreground="#0F172A" />
+            <TextBlock Text="사용자가 자주 겪는 팝업 메시지와 문의사항을 검색하고 처리 절차를 확인합니다."
+                       Margin="0,6,0,0"
+                       FontSize="14"
+                       Foreground="#64748B" />
         </StackPanel>
 
-        <Grid Grid.Row="1">
+        <Grid x:Name="PopupManualPanel" Grid.Row="1">
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="340" />
                 <ColumnDefinition Width="18" />
@@ -55,8 +68,8 @@
                         <RowDefinition Height="*" />
                     </Grid.RowDefinitions>
                     <TextBlock Text="키워드 검색" FontSize="18" FontWeight="SemiBold" />
-                    <TextBox x:Name="SearchTextBox" Grid.Row="1" Margin="0,12,0,12" TextChanged="SearchTextBox_TextChanged" />
-                    <ListBox x:Name="GuideListBox" Grid.Row="2" SelectionChanged="GuideListBox_SelectionChanged">
+                    <TextBox x:Name="PopupSearchTextBox" Grid.Row="1" Margin="0,12,0,12" TextChanged="PopupSearchTextBox_TextChanged" />
+                    <ListBox x:Name="PopupGuideListBox" Grid.Row="2" SelectionChanged="PopupGuideListBox_SelectionChanged">
                         <ListBox.ItemTemplate>
                             <DataTemplate>
                                 <Border Background="#F8FAFC" BorderBrush="#E2E8F0" BorderThickness="1" CornerRadius="6" Padding="12" Margin="0,0,0,8">
@@ -80,13 +93,13 @@
                         <RowDefinition Height="*" />
                         <RowDefinition Height="Auto" />
                     </Grid.RowDefinitions>
-                    <TextBlock x:Name="TitleTextBlock" FontSize="25" FontWeight="Bold" Foreground="#0F172A" TextWrapping="Wrap" />
+                    <TextBlock x:Name="PopupTitleTextBlock" FontSize="25" FontWeight="Bold" Foreground="#0F172A" TextWrapping="Wrap" />
                     <StackPanel Grid.Row="1" Margin="0,8,0,16">
-                        <TextBlock x:Name="SummaryTextBlock" Foreground="#475569" TextWrapping="Wrap" />
-                        <TextBlock x:Name="KeywordsTextBlock" Margin="0,8,0,0" Foreground="#64748B" />
+                        <TextBlock x:Name="PopupSummaryTextBlock" Foreground="#475569" TextWrapping="Wrap" />
+                        <TextBlock x:Name="PopupKeywordsTextBlock" Margin="0,8,0,0" Foreground="#64748B" TextWrapping="Wrap" />
                     </StackPanel>
                     <ScrollViewer Grid.Row="2">
-                        <ItemsControl x:Name="StepsItemsControl">
+                        <ItemsControl x:Name="PopupStepsItemsControl">
                             <ItemsControl.ItemTemplate>
                                 <DataTemplate>
                                     <Grid Margin="0,0,0,12">
@@ -106,7 +119,7 @@
                     <Border Grid.Row="3" Background="#F8FAFC" BorderBrush="#E2E8F0" BorderThickness="1" CornerRadius="6" Padding="14">
                         <StackPanel>
                             <TextBlock Text="담당자 수정 권한" FontWeight="SemiBold" />
-                            <TextBlock x:Name="OwnerTextBlock" Margin="0,5,0,0" TextWrapping="Wrap" Foreground="#475569" />
+                            <TextBlock x:Name="PopupOwnerTextBlock" Margin="0,5,0,0" TextWrapping="Wrap" Foreground="#475569" />
                         </StackPanel>
                     </Border>
                 </Grid>
@@ -115,11 +128,92 @@
             <Border Grid.Column="4" Style="{StaticResource Panel}">
                 <StackPanel>
                     <TextBlock Text="댓글" FontSize="18" FontWeight="SemiBold" />
-                    <TextBlock Text="교수님, 선생님들이 처리 결과나 추가 문의를 남길 수 있습니다." Margin="0,5,0,12" Foreground="#64748B" TextWrapping="Wrap" />
-                    <ListBox x:Name="CommentListBox" MinHeight="240" />
-                    <TextBox x:Name="CommentInput" Margin="0,12,0,8" MinHeight="72" AcceptsReturn="True" TextWrapping="Wrap" />
-                    <Button Content="댓글 등록" Style="{StaticResource PrimaryButton}" Click="AddCommentButton_Click" />
+                    <TextBlock Text="교수님, 선생님들이 처리 결과나 추가 문의를 남길 수 있습니다."
+                               Margin="0,5,0,12"
+                               Foreground="#64748B"
+                               TextWrapping="Wrap" />
+                    <ListBox x:Name="PopupCommentListBox" MinHeight="240" />
+                    <TextBox x:Name="PopupCommentInput" Margin="0,12,0,8" MinHeight="72" AcceptsReturn="True" TextWrapping="Wrap" />
+                    <Button Content="댓글 등록" Style="{StaticResource PrimaryButton}" Click="AddPopupCommentButton_Click" />
                 </StackPanel>
+            </Border>
+        </Grid>
+
+        <Grid x:Name="InquiryPanel" Grid.Row="1" Visibility="Collapsed">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="360" />
+                <ColumnDefinition Width="18" />
+                <ColumnDefinition Width="*" />
+            </Grid.ColumnDefinitions>
+
+            <Border Style="{StaticResource Panel}">
+                <Grid>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="*" />
+                    </Grid.RowDefinitions>
+                    <TextBlock Text="문의사항 검색" FontSize="18" FontWeight="SemiBold" />
+                    <TextBox x:Name="InquirySearchTextBox" Grid.Row="1" Margin="0,12,0,12" TextChanged="InquirySearchTextBox_TextChanged" />
+                    <ListBox x:Name="InquiryListBox" Grid.Row="2" SelectionChanged="InquiryListBox_SelectionChanged">
+                        <ListBox.ItemTemplate>
+                            <DataTemplate>
+                                <Border Background="#F8FAFC" BorderBrush="#E2E8F0" BorderThickness="1" CornerRadius="6" Padding="12" Margin="0,0,0,8">
+                                    <StackPanel>
+                                        <TextBlock Text="{Binding Title}" FontWeight="SemiBold" TextWrapping="Wrap" />
+                                        <TextBlock Text="{Binding Summary}" Margin="0,5,0,7" Foreground="#64748B" TextWrapping="Wrap" />
+                                        <TextBlock Text="{Binding KeywordsLabel}" Foreground="#2563EB" FontSize="12" TextWrapping="Wrap" />
+                                    </StackPanel>
+                                </Border>
+                            </DataTemplate>
+                        </ListBox.ItemTemplate>
+                    </ListBox>
+                </Grid>
+            </Border>
+
+            <Border Grid.Column="2" Style="{StaticResource Panel}">
+                <Grid>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="*" />
+                        <RowDefinition Height="Auto" />
+                    </Grid.RowDefinitions>
+                    <TextBlock x:Name="InquiryTitleTextBlock" FontSize="25" FontWeight="Bold" Foreground="#0F172A" TextWrapping="Wrap" />
+                    <StackPanel Grid.Row="1" Margin="0,8,0,16">
+                        <TextBlock x:Name="InquirySummaryTextBlock" Foreground="#475569" TextWrapping="Wrap" />
+                        <TextBlock x:Name="InquiryKeywordsTextBlock" Margin="0,8,0,0" Foreground="#64748B" TextWrapping="Wrap" />
+                    </StackPanel>
+                    <ScrollViewer Grid.Row="2">
+                        <ItemsControl x:Name="InquiryStepsItemsControl">
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate>
+                                    <Grid Margin="0,0,0,12">
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="34" />
+                                            <ColumnDefinition Width="*" />
+                                        </Grid.ColumnDefinitions>
+                                        <Border Width="26" Height="26" Background="#DCFCE7" CornerRadius="13" VerticalAlignment="Top">
+                                            <TextBlock Text="{Binding Number}" HorizontalAlignment="Center" VerticalAlignment="Center" FontWeight="Bold" Foreground="#15803D" />
+                                        </Border>
+                                        <TextBlock Grid.Column="1" Text="{Binding Text}" TextWrapping="Wrap" Foreground="#334155" FontSize="15" />
+                                    </Grid>
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+                    </ScrollViewer>
+                    <Border Grid.Row="3" Background="#F8FAFC" BorderBrush="#E2E8F0" BorderThickness="1" CornerRadius="6" Padding="14">
+                        <StackPanel>
+                            <TextBlock Text="문의 등록" FontWeight="SemiBold" />
+                            <TextBlock Text="동일 문의가 없으면 아래에 내용을 남겨 새 문의사항으로 접수할 수 있습니다."
+                                       Margin="0,5,0,10"
+                                       Foreground="#64748B"
+                                       TextWrapping="Wrap" />
+                            <TextBox x:Name="NewInquiryInput" MinHeight="72" AcceptsReturn="True" TextWrapping="Wrap" />
+                            <Button Content="문의 등록" Margin="0,10,0,0" Style="{StaticResource PrimaryButton}" Click="AddInquiryButton_Click" />
+                        </StackPanel>
+                    </Border>
+                </Grid>
             </Border>
         </Grid>
     </Grid>
