@@ -5,8 +5,8 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         mc:Ignorable="d"
         Title="로그인"
-        Height="310"
-        Width="420"
+        Height="340"
+        Width="500"
         WindowStartupLocation="CenterOwner"
         ResizeMode="NoResize"
         Background="#F3F6FA"
@@ -68,30 +68,42 @@
         </Style>
     </Window.Resources>
 
-    <Border Margin="22" Background="White" CornerRadius="16" Padding="24">
+    <Border Margin="22" Background="White" CornerRadius="16" Padding="26">
         <Grid>
-            <Grid.RowDefinitions>
-                <RowDefinition Height="Auto" />
-                <RowDefinition Height="Auto" />
-                <RowDefinition Height="*" />
-                <RowDefinition Height="Auto" />
-            </Grid.RowDefinitions>
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="150" />
+                <ColumnDefinition Width="28" />
+                <ColumnDefinition Width="*" />
+            </Grid.ColumnDefinitions>
 
-            <StackPanel Grid.Row="1">
+            <Grid Grid.Column="0" VerticalAlignment="Center">
+                <Image Source="Assets/login_character.png"
+                       Width="150"
+                       Height="210"
+                       Stretch="Uniform"
+                       HorizontalAlignment="Center"
+                       VerticalAlignment="Center" />
+            </Grid>
+
+            <StackPanel Grid.Column="2" VerticalAlignment="Center">
+
                 <TextBlock Text="사번" FontWeight="SemiBold" Foreground="#334155" />
                 <TextBox x:Name="EmployeeNoTextBox" Margin="0,5,0,12" />
+
                 <TextBlock Text="비밀번호" FontWeight="SemiBold" Foreground="#334155" />
                 <PasswordBox x:Name="PasswordInput" Margin="0,5,0,0" />
-            </StackPanel>
 
-            <Grid Grid.Row="4" Margin="0,18,0,0">
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="*" />
-                </Grid.ColumnDefinitions>
-                <Button x:Name="LoginButton" Grid.Column="1" Content="로그인" Style="{StaticResource PrimaryButton}" Click="LoginButton_Click" Cursor="Hand"
-                        IsDefault="True"
-                        />
-            </Grid>
+                <Grid Margin="0,20,0,0">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*" />
+                    </Grid.ColumnDefinitions>
+                    <Button x:Name="LoginButton"
+                            Content="로그인"
+                            Style="{StaticResource PrimaryButton}"
+                            Click="LoginButton_Click"
+                            IsDefault="True" />
+                </Grid>
+            </StackPanel>
         </Grid>
     </Border>
 </Window>

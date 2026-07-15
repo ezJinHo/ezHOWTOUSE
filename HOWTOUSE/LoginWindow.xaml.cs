@@ -64,17 +64,17 @@ namespace HOWTOUSE
         private static LoginUser FindLoginUser(string employeeNo, string password)
         {
             const string query = @"
-            SELECT EMP_NO, USER_NM
+            SELECT STF_NO, STF_NM
                 FROM CNLRRUSD
-                WHERE STF_NO = @EMP_NO
-                AND LGIN_PWD = @PASSWORD
+                WHERE STF_NO = @STF_NO
+                AND LGIN_PWD = @LGIN_PWD
                 LIMIT 1";
 
             using (MySqlConnection connection = new MySqlConnection(AppSettings.Current.Database.ConnectionString))
             using (MySqlCommand command = new MySqlCommand(query, connection))
             {
-                command.Parameters.AddWithValue("@EMP_NO", employeeNo);
-                command.Parameters.AddWithValue("@PASSWORD", password);
+                command.Parameters.AddWithValue("@STF_NO", employeeNo);
+                command.Parameters.AddWithValue("@LGIN_PWD", password);
 
                 connection.Open();
 
@@ -87,8 +87,8 @@ namespace HOWTOUSE
 
                     return new LoginUser
                     {
-                        EmployeeNo = reader["EMP_NO"].ToString(),
-                        UserName = reader["USER_NM"].ToString()
+                        EmployeeNo = reader["STF_NO"].ToString(),
+                        UserName = reader["STF_NM"].ToString()
                     };
                 }
             }
@@ -99,12 +99,12 @@ namespace HOWTOUSE
             const string query = @"
             UPDATE CNLRRUSD
                SET LAST_LOGIN_DTM = NOW()
-             WHERE EMP_NO = @EMP_NO";
+             WHERE STF_NO = @STF_NO";
 
             using (MySqlConnection connection = new MySqlConnection(AppSettings.Current.Database.ConnectionString))
             using (MySqlCommand command = new MySqlCommand(query, connection))
             {
-                command.Parameters.AddWithValue("@EMP_NO", employeeNo);
+                command.Parameters.AddWithValue("@STF_NO", employeeNo);
 
                 connection.Open();
                 command.ExecuteNonQuery();

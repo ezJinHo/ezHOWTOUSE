@@ -7,8 +7,10 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <None Remove="Assets\logo.png" />
-    <Resource Include="Assets\logo.png" />
+    <None Remove="Assets\ezHOWTOUSE_LOGO.png" />
+    <Resource Include="Assets\ezHOWTOUSE_LOGO.png" />
+    <None Remove="Assets\login_character.png" />
+    <Resource Include="Assets\login_character.png" />
   </ItemGroup>
 
   <ItemGroup>
