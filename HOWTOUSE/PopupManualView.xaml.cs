@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
@@ -28,7 +28,6 @@ namespace HOWTOUSE
         private readonly ObservableCollection<string> editingKeywords = new ObservableCollection<string>();     // 키워드 목록
         
         private PopupManualItem selectedPopupManualItem;
-        private bool isNewPopupManual;
 
         public event PropertyChangedEventHandler PropertyChanged;
 
@@ -176,9 +175,46 @@ namespace HOWTOUSE
             }
         }
 
+        private bool isEditMode;
+        public bool IsEditMode
+        {
+            get { return isEditMode; }
+            private set
+            {
+                if (isEditMode != value)
+                {
+                    isEditMode = value;
+                    OnPropertyChanged("IsEditMode");
+                    OnPropertyChanged("ManualActionButtonText");
+                    OnPropertyChanged("CurrentManualCommand");
+                }
+            }
+        }
+
+        /// <summary>
+        /// desc         : 수정모드/신규모드 구분하여 '수정'/'저장' 버튼 텍스트
+        /// author       : 오승주
+        /// create Date  : 2026-07-23
+        /// update date  : 최종 수정일자 , 수정자, 수정개요
+        /// </summary>
+        public string ManualActionButtonText
+        {
+            get { return IsEditMode ? "수정" : "저장"; }
+        }
+
+        /// <summary>
+        /// desc         : 수정모드/신규모드 구분하여 거맨드 분리
+        /// author       : 오승주
+        /// create Date  : 2026-07-23
+        /// update date  : 최종 수정일자 , 수정자, 수정개요
+        /// </summary>
+        public ICommand CurrentManualCommand
+        {
+            // 수정모드이면 수정 커맨드를 타도록, 신규모드이면 저장 커맨드를 타도록
+            get { return IsEditMode ? UpdateManualCommand : SaveManualCommand; }
+        }
+
         #endregion
-
-
 
 
         public PopupManualView()
@@ -202,11 +238,6 @@ namespace HOWTOUSE
             bool isPopup = tabName == "Popup";
             PopupManualPanel.Visibility = isPopup ? Visibility.Visible : Visibility.Collapsed;
             InquiryPanel.Visibility = isPopup ? Visibility.Collapsed : Visibility.Visible;
-
-            if (isPopup && PopupGuideListBox.SelectedItem == null && filteredPopupManualItems.Count > 0)
-            {
-                PopupGuideListBox.SelectedIndex = 0;
-            }
         }
 
         private void PopupSearchTextBox_TextChanged(object sender, TextChangedEventArgs e)
@@ -214,6 +245,12 @@ namespace HOWTOUSE
             ApplyPopupManualFilter();
         }
 
+        /// <summary>
+        /// desc         : 키워드 검색
+        /// author       : 오승주
+        /// create Date  : 2026-07-22
+        /// update date  : 최종 수정일자 , 수정자, 수정개요
+        /// </summary>
         private void ApplyPopupManualFilter()
         {
             string keyword = PopupSearchTextBox == null ? string.Empty : PopupSearchTextBox.Text.Trim();
@@ -222,16 +259,15 @@ namespace HOWTOUSE
                 .OrderBy(item => item.Message)
                 .ToList();
 
+            // 검색에 의해 필터링된 매뉴얼 목록 초기화
             filteredPopupManualItems.Clear();
+
             foreach (PopupManualItem item in matches)
             {
                 filteredPopupManualItems.Add(item);
             }
 
-            if (filteredPopupManualItems.Count > 0 && PopupGuideListBox.SelectedItem == null)
-            {
-                PopupGuideListBox.SelectedIndex = 0;
-            }
+            ClearPopupManualSelection();
         }
 
         private void PopupGuideListBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
@@ -239,6 +275,7 @@ namespace HOWTOUSE
             PopupManualItem item = PopupGuideListBox.SelectedItem as PopupManualItem;
             if (item == null)
             {
+                ClearPopupManualDetail();
                 return;
             }
 
@@ -295,6 +332,26 @@ namespace HOWTOUSE
             }
         }
 
+        private ICommand updateManualCommand;
+        /// <summary>
+        /// desc         : 메뉴얼 수정 커맨드
+        /// author       : 오승주
+        /// create date  : 2026-07-23
+        /// update date  : 최종 수정 일자, 수정자, 수정개요
+        /// </summary>
+        public ICommand UpdateManualCommand
+        {
+            get
+            {
+                if (updateManualCommand == null)
+                {
+                    updateManualCommand = new RelayCommand(p => this.UpdateManual());
+                }
+
+                return updateManualCommand;
+            }
+        }
+
         private ICommand addStepCommand;
         /// <summary>
         /// desc         : 해결방안 단계추가 커맨드
@@ -347,8 +404,7 @@ namespace HOWTOUSE
         private void AddNewManual()
         {
             selectedPopupManualItem = null;
-            isNewPopupManual = true;
-
+            IsEditMode = false;
             PopupGuideListBox.SelectedItem = null;
             SelectedCategory = CategoryItemList.FirstOrDefault();
 
@@ -359,11 +415,47 @@ namespace HOWTOUSE
             InquirerName = string.Empty;                // 문의자
             ContactNumber = string.Empty;               // 연락 가능한 내선번호
 
-            PopupKeywordInput.Text = string.Empty;
+            KeywordInputText = string.Empty;
 
             editingKeywords.Clear();
 
             editingSteps.Clear();
+            AddSteps();
+        }
+
+        private void ClearPopupManualSelection()
+        {
+            selectedPopupManualItem = null;
+            IsEditMode = false;
+
+            if (PopupGuideListBox != null)
+            {
+                PopupGuideListBox.SelectedItem = null;
+            }
+
+            ClearPopupManualDetail();
+        }
+
+        /// <summary>
+        /// name         : 매뉴얼 상세 데이터 초기화
+        /// desc         : 매뉴얼 목록에서 매뉴얼을 선택했을때 선택한 매뉴얼의 상세 데이터가 조회되어 우측에 보여지는데 보여지는 데이터를 초기화 하는 메서드
+        /// author       : 오승주 
+        /// create date  : 2026-07-23
+        /// update date  : 최종 수정 일자, 수정자, 수정개요 
+        /// </summary>
+        private void ClearPopupManualDetail()
+        {
+            IsEditMode = false;
+            this.SelectedCategory = CategoryItemList.FirstOrDefault();
+            this.ManualTitle = string.Empty;
+            this.ManualPopupMessageContent = string.Empty;
+            this.ManualProblemSituation = string.Empty;
+            this.InquirerName = string.Empty;
+            this.ContactNumber = string.Empty;
+            this.KeywordInputText = string.Empty;
+
+            this.editingKeywords.Clear();
+            this.editingSteps.Clear();
             AddSteps();
         }
 
@@ -376,64 +468,15 @@ namespace HOWTOUSE
         /// </summary>
         private void SaveManual()
         {
-            // 입력값 검증 로직
+            PopupManual_INOUT inDTO = CreatePopupManualInput();
 
-
-            List<PopupManualStep> savedSteps = editingSteps
-                .Where(step => !string.IsNullOrWhiteSpace(step.Text) || step.Images.Count > 0)
-                .Select(step => step.Clone())
-                .ToList();
-
-            // 메뉴얼 INOUT DTO 객체 생성
-            PopupManual_INOUT inDTO = new PopupManual_INOUT();
-
-            // 화면에서 입력값 단일 데이터 매핑
-            inDTO.CategoryCd = SelectedCategory.ComnCd;
-            inDTO.ManualNm = ManualTitle.Trim();
-            inDTO.MessageCnte = ManualPopupMessageContent.Trim();
-            inDTO.ProblemCnte = ManualProblemSituation.Trim();
-            inDTO.AskStfNm = (InquirerName ?? string.Empty).Trim();
-            inDTO.TelNo = (ContactNumber ?? string.Empty).Trim();
-
-            // 단계와 이미지 매핑
-            MapStepsAndImages(inDTO, savedSteps);
-
-            // 키워드 매핑
-            MapKeywords(inDTO);
-
-            // 등록직원번호, 등록일시, 수정직원번호, 수정일시 데이터 세팅
-            inDTO.FsrStfNo = LoginSession.EmployeeNo;
-            inDTO.FsrDtm = System.DateTime.Now;
-            inDTO.LshStfNo = LoginSession.EmployeeNo;
-            inDTO.LshDtm = System.DateTime.Now;
+            int savedManualNo;
 
             // 저장 로직 호출
             try
             {
                 PopupManualDac popupManualDac = new PopupManualDac();
-                int manualNo = popupManualDac.InsertPopupManual(AppSettings.Current.Database.ConnectionString,inDTO);
-
-                PopupManualItem target = selectedPopupManualItem;
-                if (isNewPopupManual || target == null)
-                {
-                    target = new PopupManualItem();
-                    popupManualItems.Insert(0, target);
-                }
-
-                target.ManuNo = manualNo;
-                target.Update(
-                    inDTO.CategoryCd,
-                    GetSelectedPopupCategoryName(),
-                    inDTO.ManualNm,
-                    inDTO.MessageCnte,
-                    inDTO.ProblemCnte,
-                    inDTO.AskStfNm,
-                    inDTO.TelNo,
-                    savedSteps,
-                    string.Join(", ", editingKeywords));
-
-                selectedPopupManualItem = target;
-                isNewPopupManual = false;
+                savedManualNo = popupManualDac.InsertPopupManual(AppSettings.Current.Database.ConnectionString, inDTO);
             }
             catch (Exception ex)
             {
@@ -441,11 +484,78 @@ namespace HOWTOUSE
                 return;
             }
 
-            // 저장 후, 화면 재로딩
-            ApplyPopupManualFilter();
-            PopupGuideListBox.SelectedItem = selectedPopupManualItem;
-            PopupGuideListBox.Items.Refresh();
+            ReloadPopupManualListAndSelect(savedManualNo);
             MessageBox.Show("팝업 메시지 매뉴얼이 저장되었습니다.", "EZHOWTOUSE", MessageBoxButton.OK, MessageBoxImage.Information);
+        }
+
+        /// <summary>
+        /// name         : 매뉴얼 수정 메서드
+        /// desc         : 선택한 기존 매뉴얼 내용을 수정한다.
+        /// author       : 오승주
+        /// create date  : 2026-07-23
+        /// update date  : 최종 수정 일자, 수정자, 수정개요
+        /// </summary>
+        private void UpdateManual()
+        {
+            if (selectedPopupManualItem == null || selectedPopupManualItem.ManuNo <= 0)
+            {
+                MessageBox.Show("수정할 매뉴얼을 선택해주세요.", "EZHOWTOUSE", MessageBoxButton.OK, MessageBoxImage.Information);
+                return;
+            }
+
+            // CreatePopupManualInput() 메서드 안에서 수정한 데이터가 담김.
+            PopupManual_INOUT inDTO = CreatePopupManualInput();
+
+            // 수정할 매뉴얼 번호를 담음
+            inDTO.ManuNo = selectedPopupManualItem.ManuNo;
+
+            try
+            {
+                PopupManualDac popupManualDac = new PopupManualDac();
+                popupManualDac.UpdatePopupManual(AppSettings.Current.Database.ConnectionString, inDTO);
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"매뉴얼 수정 중 오류가 발생했습니다.\n\n{ex.Message}", "EZHOWTOUSE", MessageBoxButton.OK, MessageBoxImage.Error);
+                return;
+            }
+
+            ReloadPopupManualListAndSelect(inDTO.ManuNo);
+            MessageBox.Show("팝업 메시지 매뉴얼이 수정되었습니다.", "EZHOWTOUSE", MessageBoxButton.OK, MessageBoxImage.Information);
+        }
+
+        /// <summary>
+        /// name         : 화면 입력값 DTO 생성
+        /// desc         : 화면의 단일/복합 입력값을 팝업 매뉴얼 DTO로 변환한다.
+        /// author       : 오승주
+        /// create date  : 2026-07-23
+        /// update date  : 최종 수정 일자, 수정자, 수정개요
+        /// </summary>
+        private PopupManual_INOUT CreatePopupManualInput()
+        {
+            List<PopupManualStep> savedSteps = editingSteps
+                .Where(step => !string.IsNullOrWhiteSpace(step.Text) || step.Images.Count > 0)
+                .Select(step => step.Clone())
+                .ToList();
+
+            PopupManual_INOUT inDTO = new PopupManual_INOUT();
+
+            inDTO.CategoryCd = this.SelectedCategory.ComnCd;
+            inDTO.ManualNm = this.ManualTitle.Trim();
+            inDTO.MessageCnte = this.ManualPopupMessageContent.Trim();
+            inDTO.ProblemCnte = this.ManualProblemSituation.Trim();
+            inDTO.AskStfNm = (this.InquirerName ?? string.Empty).Trim();
+            inDTO.TelNo = (this.ContactNumber ?? string.Empty).Trim();
+
+            MapStepsAndImages(inDTO, savedSteps);
+            MapKeywords(inDTO);
+
+            inDTO.FsrStfNo = LoginSession.EmployeeNo;
+            inDTO.FsrDtm = System.DateTime.Now;
+            inDTO.LshStfNo = LoginSession.EmployeeNo;
+            inDTO.LshDtm = System.DateTime.Now;
+
+            return inDTO;
         }
 
         /// <summary>
@@ -596,18 +706,17 @@ namespace HOWTOUSE
         private void LoadPopupManualItem(PopupManualItem item)
         {
             selectedPopupManualItem = item;
-            isNewPopupManual = false;
-
+            IsEditMode = true;
             SelectPopupCategory(item.CategoryCd);
 
             // 메뉴얼 내용 조회 후 세팅
-            ManualTitle = item.MenuName;                // 메뉴얼 명
-            ManualPopupMessageContent = item.Message;   // 팝업 메시지 내용
-            ManualProblemSituation = item.Situation;    // 문제상황
-            InquirerName = item.Requester;              // 문의자
-            ContactNumber = item.ExtensionNumber;       // 연락 가능 내선번호
+            this.ManualTitle = item.MenuName;                // 메뉴얼 명
+            this.ManualPopupMessageContent = item.Message;   // 팝업 메시지 내용
+            this.ManualProblemSituation = item.Situation;    // 문제상황
+            this.InquirerName = item.Requester;              // 문의자
+            this.ContactNumber = item.ExtensionNumber;       // 연락 가능 내선번호
 
-            PopupKeywordInput.Text = string.Empty;
+            this.KeywordInputText = string.Empty;
             LoadKeywords(item.Keywords);
 
             editingSteps.Clear();
@@ -702,6 +811,39 @@ namespace HOWTOUSE
             {
                 popupManualItems.Add(ConvertToPopupManualItem(manual));
             }
+        }
+
+        /// <summary>
+        /// name         : 팝업 매뉴얼 목록 재조회 후 선택
+        /// desc         : 저장 후 DB를 다시 조회하고 저장된 매뉴얼을 화면에서 다시 선택한다.
+        /// author       : 오승주
+        /// create date  : 2026-07-22
+        /// update date  : 최종 수정 일자, 수정자, 수정개요
+        /// </summary>
+        private void ReloadPopupManualListAndSelect(int manualNo)
+        {
+            LoadPopupManualList();
+            ApplyPopupManualFilter();
+
+            PopupManualItem savedItem = filteredPopupManualItems.FirstOrDefault(item => item.ManuNo == manualNo);
+
+            if (savedItem == null && PopupSearchTextBox != null && !string.IsNullOrWhiteSpace(PopupSearchTextBox.Text))
+            {
+                PopupSearchTextBox.Text = string.Empty;
+                ApplyPopupManualFilter();
+                savedItem = filteredPopupManualItems.FirstOrDefault(item => item.ManuNo == manualNo);
+            }
+
+            if (savedItem == null)
+            {
+                selectedPopupManualItem = null;
+                IsEditMode = false;
+                return;
+            }
+
+            selectedPopupManualItem = savedItem;
+            PopupGuideListBox.SelectedItem = savedItem;
+            LoadPopupManualItem(savedItem);
         }
 
         /// <summary>

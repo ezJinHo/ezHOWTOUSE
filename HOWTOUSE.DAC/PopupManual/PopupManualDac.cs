@@ -143,11 +143,41 @@ namespace HOWTOUSE.DAC.PopupManual
             }
         }
 
+
+        public void UpdatePopupManual(string connectionString, PopupManual_INOUT manual)
+        {
+            using (MySqlConnection connection = new MySqlConnection(connectionString))
+            {
+                connection.Open();
+
+                using (MySqlTransaction transaction = connection.BeginTransaction())
+                {
+                    try
+                    {
+                        UpdateManual(connection, transaction, manual);
+                        DeleteKeywords(connection, transaction, manual.ManuNo);
+                        DeleteImages(connection, transaction, manual.ManuNo);
+                        DeleteSteps(connection, transaction, manual.ManuNo);
+                        InsertSteps(connection, transaction, manual);
+                        InsertImages(connection, transaction, manual);
+                        InsertKeywords(connection, transaction, manual);
+
+                        transaction.Commit();
+                    }
+                    catch
+                    {
+                        transaction.Rollback();
+                        throw;
+                    }
+                }
+            }
+        }
+        
         private static int GetNextManualNo(MySqlConnection connection, MySqlTransaction transaction)
         {
             const string query = @"
-SELECT IFNULL(MAX(CAST(MANU_NO AS UNSIGNED)), 0) + 1
-  FROM CRMWKLID";
+                                    SELECT IFNULL(MAX(CAST(MANU_NO AS UNSIGNED)), 0) + 1
+                                      FROM CRMWKLID";
 
             using (MySqlCommand command = new MySqlCommand(query, connection, transaction))
             {
@@ -158,29 +188,29 @@ SELECT IFNULL(MAX(CAST(MANU_NO AS UNSIGNED)), 0) + 1
         private static void InsertManual(MySqlConnection connection, MySqlTransaction transaction, PopupManual_INOUT manual)
         {
             const string query = @"
-INSERT INTO CRMWKLID
-       (MANU_NO,
-        CATEGORY_CD,
-        MANUAL_NM,
-        MESSAGE_CNTE,
-        PROBLEM_CNTE,
-        ASK_STF_NM,
-        TEL_NO,
-        FSR_STF_NO,
-        FSR_DTM,
-        LSH_STF_NO,
-        LSH_DTM)
-VALUES (@MANU_NO,
-        @CATEGORY_CD,
-        @MANUAL_NM,
-        @MESSAGE_CNTE,
-        @PROBLEM_CNTE,
-        @ASK_STF_NM,
-        @TEL_NO,
-        @FSR_STF_NO,
-        NOW(),
-        @LSH_STF_NO,
-        NOW())";
+                                INSERT INTO CRMWKLID
+                                       (MANU_NO,
+                                        CATEGORY_CD,
+                                        MANUAL_NM,
+                                        MESSAGE_CNTE,
+                                        PROBLEM_CNTE,
+                                        ASK_STF_NM,
+                                        TEL_NO,
+                                        FSR_STF_NO,
+                                        FSR_DTM,
+                                        LSH_STF_NO,
+                                        LSH_DTM)
+                                VALUES (@MANU_NO,
+                                        @CATEGORY_CD,
+                                        @MANUAL_NM,
+                                        @MESSAGE_CNTE,
+                                        @PROBLEM_CNTE,
+                                        @ASK_STF_NM,
+                                        @TEL_NO,
+                                        @FSR_STF_NO,
+                                        NOW(),
+                                        @LSH_STF_NO,
+                                        NOW())";
 
             using (MySqlCommand command = new MySqlCommand(query, connection, transaction))
             {
@@ -193,6 +223,59 @@ VALUES (@MANU_NO,
                 command.Parameters.AddWithValue("@TEL_NO", manual.TelNo);
                 command.Parameters.AddWithValue("@FSR_STF_NO", manual.FsrStfNo);
                 command.Parameters.AddWithValue("@LSH_STF_NO", manual.LshStfNo);
+                command.ExecuteNonQuery();
+            }
+        }
+
+
+        private static void UpdateManual(MySqlConnection connection, MySqlTransaction transaction, PopupManual_INOUT manual)
+        {
+            const string query = @"
+                                    UPDATE CRMWKLID
+                                       SET CATEGORY_CD = @CATEGORY_CD,
+                                           MANUAL_NM = @MANUAL_NM,
+                                           MESSAGE_CNTE = @MESSAGE_CNTE,
+                                           PROBLEM_CNTE = @PROBLEM_CNTE,
+                                           ASK_STF_NM = @ASK_STF_NM,
+                                           TEL_NO = @TEL_NO,
+                                           LSH_STF_NO = @LSH_STF_NO,
+                                           LSH_DTM = NOW()
+                                     WHERE MANU_NO = @MANU_NO";
+
+            using (MySqlCommand command = new MySqlCommand(query, connection, transaction))
+            {
+                command.Parameters.AddWithValue("@MANU_NO", manual.ManuNo);
+                command.Parameters.AddWithValue("@CATEGORY_CD", manual.CategoryCd);
+                command.Parameters.AddWithValue("@MANUAL_NM", manual.ManualNm);
+                command.Parameters.AddWithValue("@MESSAGE_CNTE", manual.MessageCnte);
+                command.Parameters.AddWithValue("@PROBLEM_CNTE", manual.ProblemCnte);
+                command.Parameters.AddWithValue("@ASK_STF_NM", manual.AskStfNm);
+                command.Parameters.AddWithValue("@TEL_NO", manual.TelNo);
+                command.Parameters.AddWithValue("@LSH_STF_NO", manual.LshStfNo);
+                command.ExecuteNonQuery();
+            }
+        }
+
+        private static void DeleteSteps(MySqlConnection connection, MySqlTransaction transaction, int manualNo)
+        {
+            ExecuteDelete(connection, transaction, "DELETE FROM CRMWKSTD WHERE MANU_NO = @MANU_NO", manualNo);
+        }
+
+        private static void DeleteImages(MySqlConnection connection, MySqlTransaction transaction, int manualNo)
+        {
+            ExecuteDelete(connection, transaction, "DELETE FROM CRMWKSID WHERE MANU_NO = @MANU_NO", manualNo);
+        }
+
+        private static void DeleteKeywords(MySqlConnection connection, MySqlTransaction transaction, int manualNo)
+        {
+            ExecuteDelete(connection, transaction, "DELETE FROM CRMWKKED WHERE MANU_NO = @MANU_NO", manualNo);
+        }
+
+        private static void ExecuteDelete(MySqlConnection connection, MySqlTransaction transaction, string query, int manualNo)
+        {
+            using (MySqlCommand command = new MySqlCommand(query, connection, transaction))
+            {
+                command.Parameters.AddWithValue("@MANU_NO", manualNo);
                 command.ExecuteNonQuery();
             }
         }

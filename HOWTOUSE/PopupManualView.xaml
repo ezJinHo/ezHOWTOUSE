@@ -371,9 +371,9 @@
                             </StackPanel>
                         </Grid>
 
-                        <Button Content="저장"
+                        <Button Content="{Binding ManualActionButtonText}"
                                 Style="{StaticResource PrimaryButton}"
-                                Command="{Binding SaveManualCommand}" />
+                                Command="{Binding CurrentManualCommand}" />
                     </StackPanel>
                 </ScrollViewer>
             </Border>
