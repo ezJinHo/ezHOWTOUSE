@@ -1,5 +1,6 @@
 using System;
 using System.IO;
+using System.Linq;
 using System.Text.Json;
 
 namespace HOWTOUSE
@@ -11,6 +12,18 @@ namespace HOWTOUSE
         public static AppSettings Current => LazyInstance.Value;
 
         public DatabaseSettings Database { get; set; } = new DatabaseSettings();
+
+        public AttachmentSettings Attachment { get; set; } = new AttachmentSettings();
+
+        // CNLRRUSD에 권한 컬럼이 없는 환경에서도 관리자 범위를 명확히 관리할 수 있습니다.
+        public string[] AdministratorEmployeeNumbers { get; set; } = Array.Empty<string>();
+
+        public bool IsAdministrator(string employeeNo)
+        {
+            return !string.IsNullOrWhiteSpace(employeeNo)
+                && AdministratorEmployeeNumbers.Any(number =>
+                    string.Equals(number?.Trim(), employeeNo.Trim(), StringComparison.OrdinalIgnoreCase));
+        }
 
         private static AppSettings Load()
         {
@@ -47,5 +60,10 @@ namespace HOWTOUSE
 
         public string ConnectionString =>
             $"Server={Server};Port={Port};Database={Name};Uid={User};Pwd={Password};SslMode={SslMode};AllowPublicKeyRetrieval={AllowPublicKeyRetrieval};";
+    }
+
+    public sealed class AttachmentSettings
+    {
+        public string SharePath { get; set; } = string.Empty;
     }
 }

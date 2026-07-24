@@ -30,6 +30,8 @@ namespace HOWTOUSE
             set { isCompleted = value; }
         }
 
+        public bool CanManage { get; set; }
+
         public long TASK_ID { get; set; }
 
         public DateTime? TASK_DT { get; set; }
