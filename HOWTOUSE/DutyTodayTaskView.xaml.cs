@@ -1,10 +1,15 @@
 using System;
 using System.Collections.ObjectModel;
 using System.Linq;
+using System.IO;
+using System.Diagnostics;
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Input;
+using Microsoft.Win32;
 using MySql.Data.MySqlClient;
-using SEARCH.DTO;
+
+using HOWTOUSE.DTO.Common;
 
 namespace HOWTOUSE
 {
@@ -12,6 +17,7 @@ namespace HOWTOUSE
     {
         private readonly ObservableCollection<DutyPostItem> todayTaskItems = new ObservableCollection<DutyPostItem>();
         private readonly ObservableCollection<StaffInfoDTO> staffList = new ObservableCollection<StaffInfoDTO>();
+        private readonly ObservableCollection<ManualAttachment> editingAttachments = new ObservableCollection<ManualAttachment>();
 
         private DutyPostItem selectedTodayTaskItem;
         private bool isNewTodayTaskMode;
@@ -22,6 +28,7 @@ namespace HOWTOUSE
             InitializeComponent();
 
             TodayTaskListBox.ItemsSource = todayTaskItems;
+            TaskAttachmentListBox.ItemsSource = editingAttachments;
             //DutyDateTextBlock.Text = DateTime.Now.ToString("yyyy-MM-dd HH:mm") + " 기준";
 
             //SeedTodayTasks();
@@ -29,6 +36,7 @@ namespace HOWTOUSE
 
             LoadTodayTasks();
             LoadStaffList();
+            ApplyPermissionState();
         }
 
         private void NewTodayTaskButton_Click(object sender, RoutedEventArgs e)
@@ -38,6 +46,7 @@ namespace HOWTOUSE
             selectedTodayTaskItem = new DutyPostItem();
             selectedTodayTaskItem.TASK_DT = SearchTaskDatePicker.SelectedDate;
             selectedTodayTaskItem.TRGT_TP_CD = "ALL";
+            editingAttachments.Clear();
 
             DetailPanel.DataContext = selectedTodayTaskItem;
 
@@ -48,6 +57,14 @@ namespace HOWTOUSE
 
             TodayTaskTitleInput.Focus();
 
+        }
+
+        private void ApplyPermissionState()
+        {
+            // 관리자는 모든 업무를 관리하고, 일반 사용자는 본인에게 배정된 업무만 확인합니다.
+            NewTodayTaskButton.Visibility = Visibility.Visible;
+            SaveTodayTaskButton.Visibility = Visibility.Visible;
+            AdminTargetRadioButton.Visibility = SessionContext.IsAdministrator ? Visibility.Visible : Visibility.Collapsed;
         }
 
         private void TodayTaskTitleButton_Click(object sender, RoutedEventArgs e)
@@ -92,6 +109,10 @@ namespace HOWTOUSE
                 taskId = selectedTodayTaskItem.TASK_ID;
             }
 
+            if (taskId > 0)
+            {
+                SaveTaskAttachments(taskId);
+            }
             LoadTodayTasks();
 
             SelectTodayTask(
@@ -122,6 +143,8 @@ namespace HOWTOUSE
 
             TargetUserComboBox.SelectedValue = item.TRGT_STF_NO;
             TargetUserComboBox.IsEnabled = item.TRGT_TP_CD == "USER";
+            LoadTaskAttachments(item.TASK_ID);
+            ApplyPermissionState();
         }
 
 
@@ -143,6 +166,7 @@ namespace HOWTOUSE
                                         CASE A.TRGT_TP_CD
                                             WHEN 'ALL' THEN '공통업무'
                                             WHEN 'USER' THEN '개인업무'
+                                            WHEN 'ADMIN' THEN '관리자 업무'
                                         END AS TRGT_TP_NM,
                                         A.TRGT_STF_NO,
                                         A.CMPL_YN,
@@ -160,11 +184,9 @@ namespace HOWTOUSE
                                       AND A.USE_YN = 'Y'
                                       AND A.LST_YN = 'Y'
                                       AND (
-                                            A.TRGT_TP_CD = 'ALL'
-                                            OR (
-                                                A.TRGT_TP_CD = 'USER'
-                                                AND A.TRGT_STF_NO = @TRGT_STF_NO
-                                            )
+                                            @IS_ADMIN = 'Y'
+                                            OR A.TRGT_TP_CD = 'ALL'
+                                            OR (A.TRGT_TP_CD = 'USER' AND A.TRGT_STF_NO = @TRGT_STF_NO)
                                           )
                                     ORDER BY A.TASK_ID ASC";
 
@@ -182,6 +204,7 @@ namespace HOWTOUSE
                 command.Parameters.AddWithValue(
                     "@TRGT_STF_NO",
                     SessionContext.STF_NO);
+                command.Parameters.AddWithValue("@IS_ADMIN", SessionContext.IsAdministrator ? "Y" : "N");
 
 
                 connection.Open();
@@ -203,6 +226,7 @@ namespace HOWTOUSE
                         item.TRGT_STF_NO = reader["TRGT_STF_NO"].ToString();
                         item.CMPL_YN = reader["CMPL_YN"].ToString();
                         item.IsCompleted = reader["CMPL_YN"].ToString() == "Y";
+                        item.CanManage = true;
 
                         totalTaskCount++;
                         if (item.IsCompleted)
@@ -373,11 +397,20 @@ WHERE TASK_ID = @TASK_ID";
         private void UserTargetRadioButton_Checked(object sender, RoutedEventArgs e)
         {
             TargetUserComboBox.IsEnabled = true;
+            TargetUserLabel.Text = "대상 직원";
         }
         private void AllTargetRadioButton_Checked(object sender, RoutedEventArgs e)
         {
             TargetUserComboBox.IsEnabled = false;
             TargetUserComboBox.SelectedIndex = -1;
+            TargetUserLabel.Text = "대상 직원";
+        }
+
+        private void AdminTargetRadioButton_Checked(object sender, RoutedEventArgs e)
+        {
+            TargetUserComboBox.IsEnabled = false;
+            TargetUserComboBox.SelectedIndex = -1;
+            TargetUserLabel.Text = "대상 (등록된 관리자 전체)";
         }
 
         private long InsertTodayTask()
@@ -619,6 +652,69 @@ WHERE TASK_ID = @TASK_ID";
                 connection.Open();
 
                 command.ExecuteNonQuery();
+            }
+        }
+
+        private void AddTaskAttachmentButton_Click(object sender, RoutedEventArgs e)
+        {
+            string sharePath = AppSettings.Current.Attachment.SharePath;
+            OpenFileDialog dialog = new OpenFileDialog
+            {
+                Multiselect = true,
+                Filter = "모든 파일|*.*",
+                InitialDirectory = Directory.Exists(sharePath) ? sharePath : string.Empty
+            };
+            if (dialog.ShowDialog() != true) return;
+            foreach (string filePath in dialog.FileNames)
+            {
+                if (!editingAttachments.Any(item => string.Equals(item.FilePath, filePath, StringComparison.OrdinalIgnoreCase)))
+                    editingAttachments.Add(new ManualAttachment(filePath));
+            }
+        }
+
+        private void RemoveTaskAttachmentButton_Click(object sender, RoutedEventArgs e)
+        {
+            if ((sender as Button)?.Tag is ManualAttachment attachment) editingAttachments.Remove(attachment);
+        }
+
+        private void TaskAttachmentListBox_MouseDoubleClick(object sender, MouseButtonEventArgs e)
+        {
+            if (!(TaskAttachmentListBox.SelectedItem is ManualAttachment attachment) || !File.Exists(attachment.FilePath)) return;
+            Process.Start(new ProcessStartInfo(attachment.FilePath) { UseShellExecute = true });
+        }
+
+        private void LoadTaskAttachments(long taskId)
+        {
+            editingAttachments.Clear();
+            if (taskId <= 0) return;
+            const string query = @"SELECT FILE_PATH FROM MODU_ATTACH WHERE OWNER_TP_CD = 'TASK' AND OWNER_ID = @TASK_ID AND USE_YN = 'Y' ORDER BY ATTACH_ID";
+            using (MySqlConnection connection = new MySqlConnection(AppSettings.Current.Database.ConnectionString))
+            using (MySqlCommand command = new MySqlCommand(query, connection))
+            {
+                command.Parameters.AddWithValue("@TASK_ID", taskId);
+                connection.Open();
+                using (MySqlDataReader reader = command.ExecuteReader())
+                    while (reader.Read()) editingAttachments.Add(new ManualAttachment(reader["FILE_PATH"].ToString()));
+            }
+        }
+
+        private void SaveTaskAttachments(long taskId)
+        {
+            const string deactivateQuery = @"UPDATE MODU_ATTACH SET USE_YN = 'N', LSH_DTM = NOW(), LSH_STF_NO = @STF_NO WHERE OWNER_TP_CD = 'TASK' AND OWNER_ID = @TASK_ID AND USE_YN = 'Y'";
+            const string insertQuery = @"INSERT INTO MODU_ATTACH (OWNER_TP_CD, OWNER_ID, FILE_NM, FILE_PATH, FILE_EXT, USE_YN, FSR_DTM, FSR_STF_NO, LSH_DTM, LSH_STF_NO) VALUES ('TASK', @TASK_ID, @FILE_NM, @FILE_PATH, @FILE_EXT, 'Y', NOW(), @STF_NO, NOW(), @STF_NO)";
+            using (MySqlConnection connection = new MySqlConnection(AppSettings.Current.Database.ConnectionString))
+            {
+                connection.Open();
+                using (MySqlCommand command = new MySqlCommand(deactivateQuery, connection))
+                {
+                    command.Parameters.AddWithValue("@TASK_ID", taskId); command.Parameters.AddWithValue("@STF_NO", SessionContext.STF_NO); command.ExecuteNonQuery();
+                }
+                foreach (ManualAttachment attachment in editingAttachments)
+                using (MySqlCommand command = new MySqlCommand(insertQuery, connection))
+                {
+                    command.Parameters.AddWithValue("@TASK_ID", taskId); command.Parameters.AddWithValue("@FILE_NM", attachment.DisplayName);
+                    command.Parameters.AddWithValue("@FILE_PATH", attachment.FilePath); command.Parameters.AddWithValue("@FILE_EXT", Path.GetExtension(attachment.FilePath)); command.Parameters.AddWithValue("@STF_NO", SessionContext.STF_NO); command.ExecuteNonQuery();
+                }
             }
         }
     }

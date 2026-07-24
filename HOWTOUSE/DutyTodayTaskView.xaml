@@ -7,6 +7,7 @@
              mc:Ignorable="d">
     <UserControl.Resources>
         <converter:CodeMatchConverter x:Key="CodeMatchConverter"/>
+        <BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter"/>
         <Style x:Key="StretchListBoxItem" TargetType="ListBoxItem">
             <Setter Property="HorizontalContentAlignment" Value="Stretch" />
             <Setter Property="Background" Value="Transparent" />
@@ -109,7 +110,7 @@
                FontSize="20"
                FontWeight="Bold"
                Foreground="#0F172A"/>
-                    <Button Grid.Row="0"
+                    <Button x:Name="NewTodayTaskButton" Grid.Row="0"
                             Width="48"
                             HorizontalAlignment="Right"
                             Content="추가"
@@ -201,6 +202,9 @@
                                                             <DataTrigger Binding="{Binding TRGT_TP_CD}" Value="USER">
                                                                 <Setter Property="Foreground" Value="#10B981"/>
                                                             </DataTrigger>
+                                                            <DataTrigger Binding="{Binding TRGT_TP_CD}" Value="ADMIN">
+                                                                <Setter Property="Foreground" Value="#7C3AED"/>
+                                                            </DataTrigger>
 
                                                         </Style.Triggers>
                                                     </Style>
@@ -216,11 +220,12 @@
                                         <!--<TextBlock Margin="0,2,0,0" FontSize="11" Foreground="#EF4444" Text="{Binding OverdueText}" Visibility="{Binding OverdueVisibility}"/>-->
 
                                     </StackPanel>
-                                    <Button Grid.Column="2"
+                                    <Button x:Name="DeleteTodayTaskButton" Grid.Column="2"
                                             Content="삭제"
                                             Margin="8,0,0,0"
                                             Style="{StaticResource DeleteTextButton}"
                                             CommandParameter="{Binding}"
+                                            Visibility="{Binding CanManage, Converter={StaticResource BooleanToVisibilityConverter}}"
                                             Click="DeleteTodayTaskButton_Click"/>
 
                                 </Grid>
@@ -256,9 +261,12 @@
                                 <RadioButton Content="개인업무" 
                                              IsChecked="{Binding TRGT_TP_CD,Mode=TwoWay, UpdateSourceTrigger=PropertyChanged, Converter={StaticResource CodeMatchConverter}, ConverterParameter=USER}"
                                              Checked="UserTargetRadioButton_Checked"/>
+                                <RadioButton x:Name="AdminTargetRadioButton" Content="관리자 업무" Margin="20,0,0,0"
+                                             IsChecked="{Binding TRGT_TP_CD,Mode=TwoWay, UpdateSourceTrigger=PropertyChanged, Converter={StaticResource CodeMatchConverter}, ConverterParameter=ADMIN}"
+                                             Checked="AdminTargetRadioButton_Checked"/>
 
                             </StackPanel>
-                            <TextBlock Text="대상 직원" FontWeight="SemiBold"/>
+                            <TextBlock x:Name="TargetUserLabel" Text="대상 직원" FontWeight="SemiBold"/>
 
                             <ComboBox x:Name="TargetUserComboBox" Margin="0,5,0,10" 
                                       DisplayMemberPath="STF_NM"
@@ -272,6 +280,17 @@
                              MinHeight="140"
                              AcceptsReturn="True"
                              TextWrapping="Wrap" Text="{Binding TASK_CONTENT, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
+                            <Grid Margin="0,0,0,5">
+                                <Grid.ColumnDefinitions><ColumnDefinition Width="*"/><ColumnDefinition Width="Auto"/></Grid.ColumnDefinitions>
+                                <TextBlock Text="첨부 파일" FontWeight="SemiBold"/>
+                                <Button Grid.Column="1" Content="파일 추가" Style="{StaticResource SmallActionButton}" Click="AddTaskAttachmentButton_Click"/>
+                            </Grid>
+                            <ListBox x:Name="TaskAttachmentListBox" Margin="0,0,0,8" BorderThickness="0" MouseDoubleClick="TaskAttachmentListBox_MouseDoubleClick">
+                                <ListBox.ItemTemplate><DataTemplate><Border BorderBrush="#E2E8F0" BorderThickness="1" CornerRadius="4" Padding="8" Margin="0,0,0,5"><StackPanel>
+                                    <Image Source="{Binding FilePath}" MaxHeight="140" Stretch="Uniform" Visibility="{Binding ImageVisibility}"/>
+                                    <DockPanel Margin="0,5,0,0"><Button DockPanel.Dock="Right" Content="삭제" Tag="{Binding}" Style="{StaticResource DeleteTextButton}" Click="RemoveTaskAttachmentButton_Click"/><TextBlock Text="{Binding DisplayName}" VerticalAlignment="Center" TextTrimming="CharacterEllipsis"/></DockPanel>
+                                </StackPanel></Border></DataTemplate></ListBox.ItemTemplate>
+                            </ListBox>
                             <Separator Margin="0,10"/>
                             <TextBlock Text="확인 정보" FontWeight="SemiBold"/>
                             <Grid Margin="0,8,0,0">

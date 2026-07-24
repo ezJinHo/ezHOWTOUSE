@@ -12,12 +12,15 @@ namespace HOWTOUSE
 
         public static string IP_ADDRESS { get; private set; }
 
+        public static bool IsAdministrator { get; private set; }
+
 
         public static void SetUser(string employeeNo, string userName, string ipAdress)
         {
             STF_NO = employeeNo;
             STF_NM = userName;
             IP_ADDRESS = ipAdress;
+            IsAdministrator = AppSettings.Current.IsAdministrator(employeeNo);
         }
 
 
@@ -26,6 +29,7 @@ namespace HOWTOUSE
             STF_NO = null;
             STF_NM = null;
             IP_ADDRESS = null;
+            IsAdministrator = false;
         }
     }
 }

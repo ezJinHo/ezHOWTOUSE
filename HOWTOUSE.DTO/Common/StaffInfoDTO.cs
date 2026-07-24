@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Text;
 
-namespace SEARCH.DTO
+namespace HOWTOUSE.DTO.Common
 {
     public class StaffInfoDTO
     {
